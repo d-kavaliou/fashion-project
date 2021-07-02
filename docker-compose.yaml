@@ -22,7 +22,7 @@ services:
   client:
     image: jupyter/base-notebook:latest
     volumes:
-      - ./src/notebooks:/home/jovyan/work
+      - ./src/notebooks:/home/jovyan/notebooks
     ports:
       - 8888:8888
     depends_on:
@@ -39,6 +39,8 @@ services:
       - POSTGRES_DB=fashion_db
     volumes:
       - ./tmp/database:/tmp/database
+    ports:
+      - 5432:5432
     networks:
       - network
 
