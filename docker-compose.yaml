@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  broker:
+    container_name: celery-broker
+    image: rabbitmq:3.8.18-management-alpine
+    ports:
+      - "8080:15672"
+      - "5672:5672"
+    networks:
+      - network
+
+  backend:
+    container_name: celery-backend
+    image: redis:6.2.4
+    ports:
+      - "6379:6379"
+    networks:
+      - network
+    command: redis-server --requirepass password
+
+  client:
+    image: jupyter/base-notebook:latest
+    volumes:
+      - ./src/notebooks:/home/jovyan/work
+    ports:
+      - 8888:8888
+    depends_on:
+      - database
+      - localstack
+    networks:
+      - network
+
+  database:
+    build: ./src/database
+    environment:
+      - POSTGRES_USER=fashion_user
+      - POSTGRES_PASSWORD=fashion_pass
+      - POSTGRES_DB=fashion_db
+    volumes:
+      - ./tmp/database:/tmp/database
+    networks:
+      - network
+
+  localstack:
+    image: localstack/localstack:latest
+    environment:
+      SERVICES: s3
+      DATA_DIR: /tmp/localstack/data
+    ports:
+      - 4566:4566
+    volumes:
+      - './tmp/aws:/tmp/localstack/data'
+      - './data/images:/tmp/localstack/dataset'
+      - './src/localstack:/docker-entrypoint-initaws.d'
+    networks:
+      - network
+
+networks:
+    network: {}
