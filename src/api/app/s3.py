@@ -1,20 +1,23 @@
 import json
-import localstack_client.session as boto3
+import os
+import aiobotocore
 
+from fastapi import HTTPException
 from fastapi.logger import logger
 
 BUCKET_NAME = 'fashion-tasks'
+S3_HOST = os.getenv("S3_HOST")
+S3_PORT = '4566'
 
-s3_client = boto3.client('s3')
+session = aiobotocore.get_session()
 
 
-def upload_result(data, path):
+async def upload_result(data, path):
     try:
-        s3_client.put_object(
-            Body=json.dumps(data),
-            Bucket=BUCKET_NAME,
-            Key=path
-        )
+        async with session.create_client('s3', endpoint_url=f'http://{S3_HOST}:{S3_PORT}') as client:
+            await client.put_object(Body=json.dumps(data), Bucket=BUCKET_NAME, Key=path)
+
+        return f's3://{BUCKET_NAME}/{path}'
     except Exception as ex:
         logger.error(ex)
-        raise Exception(f"Couldn't upload resulting json file: {ex}")
+        raise HTTPException(detail=f"Couldn't upload resulting json file: {ex}", status_code=500)
