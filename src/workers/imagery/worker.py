@@ -1,26 +1,25 @@
-from celery.utils.log import get_logger
-from typing import Any, Dict
-import traceback
-import s3fs
 import os
 import json
+import s3fs
+import traceback
 import yaml
+
+from celery import Celery, states
+from celery.exceptions import Ignore
+from celery.utils.log import get_logger
+from typing import Any, Dict
 
 from app.database import filter_products
 from app.augmentation import Transformer
 
-from celery import Celery, states
-from celery.exceptions import Ignore
+BUCKET_NAME = os.getenv("BUCKET_NAME")
+DATA_FOLDER = os.getenv("DATA_FOLDER")
 
+with open("config.yml", "r") as f:
+    CONFIG = yaml.load(f, Loader=yaml.FullLoader)
 
 logger = get_logger(__name__)
 imagery = Celery("imagery", broker=os.getenv('BROKER_URL'), backend=os.getenv('REDIS_URL'))
-
-with open("config.yml", "r") as f:
-    worker_config = yaml.load(f, Loader=yaml.FullLoader)
-
-BUCKET_NAME = os.getenv("BUCKET_NAME")
-DATA_FOLDER = os.getenv("DATA_FOLDER")
 
 
 @imagery.task(bind=True, name="filter")
@@ -45,7 +44,7 @@ def filter_task(self, **kwargs) -> Dict[str, Any]:
 
             if kwargs['apply_augmentation']:
                 logger.info(f'Applying augmentation')
-                transformer = Transformer(worker_config['albumentation'], DATA_FOLDER)
+                transformer = Transformer(CONFIG['albumentation'], DATA_FOLDER)
 
                 for image_name, image_aug in transformer.apply(result):
                     with s3.open(f'{s3_target}/augmentation/{image_name}', 'wb') as f:
