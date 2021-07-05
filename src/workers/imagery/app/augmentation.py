@@ -29,6 +29,6 @@ class Transformer:
             augmented = self.transforms(image=image)
 
             # convert to bytes and RGB format
-            _, image_buffer = cv2.imencode(".jpg", augmented['augmented'])
+            _, image_buffer = cv2.imencode(".jpg", augmented['image'])
 
             yield file_name, image_buffer

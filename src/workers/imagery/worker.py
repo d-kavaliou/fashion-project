@@ -44,6 +44,7 @@ def filter_task(self, **kwargs) -> Dict[str, Any]:
                 s3.upload(os.path.join(DATA_FOLDER, image_name), f'{s3_target}/images/{image_name}')
 
             if kwargs['apply_augmentation']:
+                logger.info(f'Applying augmentation')
                 transformer = Transformer(worker_config['albumentation'], DATA_FOLDER)
 
                 for image_name, image_aug in transformer.apply(result):

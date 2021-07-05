@@ -11,7 +11,7 @@ RUN apt-get update -yqq && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/* /tmp/* /var/tmp/*
 
 COPY /app /workers/app
-COPY /core /workers/core
 COPY worker.py /workers/worker.py
+COPY config.yml /workers/config.yml
 
 EXPOSE 6379 5672
