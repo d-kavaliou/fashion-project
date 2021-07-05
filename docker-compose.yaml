@@ -19,24 +19,64 @@ services:
       - network
     command: redis-server --requirepass password
 
-  client:
-    image: jupyter/base-notebook:latest
+  imagery_worker:
+    build: ./src/workers/imagery
+    container_name: celery-imagery
+    env_file:
+      - 'variables.env'
     volumes:
-      - ./src/notebooks:/home/jovyan/notebooks
+      - './data/images:/workers/data'
+    environment:
+      - BUCKET_NAME=fashion-tasks
+      - DATA_FOLDER=data
+    links:
+      - backend:backend
+      - broker:broker
+    networks:
+      - network
+    depends_on:
+      - client
+    command: celery worker -A worker.imagery --loglevel=INFO
+
+  api:
+    build: ./src/api
+    container_name: fashion-api
+    env_file:
+      - 'variables.env'
+    links:
+      - backend:backend
+      - broker:broker
+      - database:database
+      - localstack:localstack
+    ports:
+      - "5000:5000"
+    networks:
+      - network
+
+  client:
+    build: ./src/client
+    container_name: fashion-client
+    volumes:
+      - ./src/client/notebooks:/home/jovyan/notebooks
     ports:
       - 8888:8888
+    env_file:
+      - 'variables.env'
+    links:
+      - backend:backend
+      - broker:broker
+      - api:api
+      - localstack:localstack
     depends_on:
-      - database
       - localstack
+#      - api
     networks:
       - network
 
   database:
     build: ./src/database
-    environment:
-      - POSTGRES_USER=fashion_user
-      - POSTGRES_PASSWORD=fashion_pass
-      - POSTGRES_DB=fashion_db
+    env_file:
+      - 'variables.env'
     volumes:
       - ./tmp/database:/tmp/database
     ports:

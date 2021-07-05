@@ -1,0 +1,11 @@
+albumentation:
+    input_image:
+        width: 60
+        height: 80
+    cropping:
+        height:
+            min: 50
+            max: 70
+    resize:
+        width: 256
+        height: 256
