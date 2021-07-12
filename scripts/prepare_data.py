@@ -1,5 +1,4 @@
 import os
-import logging
 import argparse
 import numpy as np
 import pandas as pd
@@ -21,8 +20,9 @@ def main():
     data = data[data['id'].isin(images)]
     data['year'] = data['year'].apply(lambda y: str(int(y)) if not np.isnan(y) else "null")
 
-    if not os.path.exists(args.output):
-        os.makedirs(Path(args.output).parent)
+    target_folder = Path(args.output).parent
+    if not os.path.exists(target_folder):
+        os.makedirs(target_folder)
 
     data.to_csv(args.output, header=False)
 
