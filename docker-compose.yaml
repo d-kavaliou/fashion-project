@@ -5,8 +5,8 @@ services:
     container_name: celery-broker
     image: rabbitmq:3.8.18-management-alpine
     ports:
-      - "8080:15672"
-      - "5672:5672"
+      - 8080:15672
+      - 5672:5672
     networks:
       - network
 
@@ -14,7 +14,7 @@ services:
     container_name: celery-backend
     image: redis:6.2.4
     ports:
-      - "6379:6379"
+      - 6379:6379
     networks:
       - network
     command: redis-server --requirepass password
@@ -32,11 +32,36 @@ services:
     links:
       - backend:backend
       - broker:broker
+      - database:database
+    depends_on:
+      - broker
+      - backend
+      - database
+    networks:
+      - network
+    command: celery worker -A worker.imagery -P threads --loglevel=INFO --queues=imagery
+
+  inference_worker:
+    build: ./src/workers/inference
+    container_name: celery-inference
+    env_file:
+      - 'variables.env'
+    volumes:
+      - './data/images:/workers/data'
+    environment:
+      - BUCKET_NAME=fashion-tasks
+      - DATA_FOLDER=data
+      - INFERENCE_DEVICE=cpu
+      - BATCH_SIZE=16
+      - NUM_WORKERS=3
+    links:
+      - backend:backend
+      - broker:broker
     networks:
       - network
     depends_on:
-      - client
-    command: celery worker -A worker.imagery --loglevel=INFO
+      - imagery_worker
+    command: celery worker -A worker.inference -P threads --loglevel=INFO --queues=inference
 
   api:
     build: ./src/api
@@ -46,10 +71,12 @@ services:
     links:
       - backend:backend
       - broker:broker
-      - database:database
-      - localstack:localstack
+    depends_on:
+      - imagery_worker
+      - inference_worker
+      - localstack
     ports:
-      - "5000:5000"
+      - 5000:5000
     networks:
       - network
 
@@ -69,7 +96,7 @@ services:
       - localstack:localstack
     depends_on:
       - localstack
-#      - api
+      - api
     networks:
       - network
 
@@ -85,12 +112,10 @@ services:
       - network
 
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:0.12.13
     environment:
       SERVICES: s3
       DATA_DIR: /tmp/localstack/data
-    ports:
-      - 4566:4566
     volumes:
       - './tmp/aws:/tmp/localstack/data'
       - './data/images:/tmp/localstack/dataset'
