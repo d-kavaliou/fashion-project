@@ -25,7 +25,7 @@ services:
     env_file:
       - 'variables.env'
     volumes:
-      - './data/images:/workers/data'
+      - '${DATASET_PATH}/images:/workers/data'
     environment:
       - BUCKET_NAME=fashion-tasks
       - DATA_FOLDER=data
@@ -49,7 +49,7 @@ services:
     env_file:
       - 'variables.env'
     volumes:
-      - './data/images:/workers/data'
+      - '${DATASET_PATH}/images:/workers/data'
     environment:
       - BUCKET_NAME=fashion-tasks
       - DATA_FOLDER=data
@@ -107,7 +107,7 @@ services:
     env_file:
       - 'variables.env'
     volumes:
-      - ./tmp/database:/tmp/database
+      - ${TEMP_FOLDER}/database:/tmp/database
     networks:
       - network
 
@@ -117,8 +117,7 @@ services:
       SERVICES: s3
       DATA_DIR: /tmp/localstack/data
     volumes:
-      - './tmp/aws:/tmp/localstack/data'
-      - './data/images:/tmp/localstack/dataset'
+      - '${DATASET_PATH}/images:/tmp/localstack/dataset'
       - './src/localstack:/docker-entrypoint-initaws.d'
     networks:
       - network

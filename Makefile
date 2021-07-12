@@ -1,6 +1,6 @@
 SHELL := /bin/bash
-TEMP_FOLDER = tmp/
-DATASET_PATH = data/
+export TEMP_FOLDER = ./tmp
+export DATASET_PATH = ./data
 
 build:
 	pip install -r requirements.txt
