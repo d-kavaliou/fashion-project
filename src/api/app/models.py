@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 from pydantic import BaseModel
 
 
@@ -14,3 +14,10 @@ class FilterProductsModel(BaseModel):
     usage: Optional[str]
     apply_model: bool = False
     apply_augmentation: bool = False
+
+
+class TaskResult(BaseModel):
+    id: str
+    status: str
+    error: Optional[str] = None
+    result: Optional[Any] = None
