@@ -1,0 +1,5 @@
+model:
+    preprocessing:
+        resize:
+            width: 224
+            height: 224
