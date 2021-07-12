@@ -29,7 +29,7 @@ def inference_task(self, task_output) -> Dict[str, Any]:
     try:
         image_names = list(map(os.path.basename, s3.ls(f'{s3_target}/images')))
         results = inference_engine.predict(image_names)
-        logger.info(len(results))
+
         if results:
             dump_result = f'{s3_target}/predictions.json'
             with s3.open(dump_result, 'w') as dump_f:
@@ -48,4 +48,3 @@ def inference_task(self, task_output) -> Dict[str, Any]:
             }
         )
         raise Ignore()
-
