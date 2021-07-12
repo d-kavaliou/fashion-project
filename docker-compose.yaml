@@ -42,7 +42,9 @@ services:
     command: celery worker -A worker.imagery -P threads --loglevel=INFO --queues=imagery
 
   inference_worker:
-    build: ./src/workers/inference
+    build:
+      context: ./src/workers/inference
+      shm_size: '2gb'
     container_name: celery-inference
     env_file:
       - 'variables.env'
@@ -52,8 +54,8 @@ services:
       - BUCKET_NAME=fashion-tasks
       - DATA_FOLDER=data
       - INFERENCE_DEVICE=cpu
-      - BATCH_SIZE=16
-      - NUM_WORKERS=3
+      - BATCH_SIZE=10
+      - NUM_WORKERS=2
     links:
       - backend:backend
       - broker:broker
@@ -75,6 +77,8 @@ services:
       - imagery_worker
       - inference_worker
       - localstack
+    ports:
+      - 5000:5000
     networks:
       - network
 
