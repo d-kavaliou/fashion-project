@@ -75,8 +75,6 @@ services:
       - imagery_worker
       - inference_worker
       - localstack
-    ports:
-      - 5000:5000
     networks:
       - network
 
@@ -106,8 +104,6 @@ services:
       - 'variables.env'
     volumes:
       - ./tmp/database:/tmp/database
-    ports:
-      - 5432:5432
     networks:
       - network
 
