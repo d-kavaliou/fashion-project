@@ -11,6 +11,7 @@ from typing import Any, Dict
 
 from app.database import filter_products
 from app.augmentation import Transformer
+from app.uploader import Uploader
 
 BUCKET_NAME = os.getenv("BUCKET_NAME")
 DATA_FOLDER = os.getenv("DATA_FOLDER")
@@ -35,20 +36,19 @@ def filter_task(self, **kwargs) -> Dict[str, Any]:
         if products:
             result = list(map(dict, products))
 
-            with s3.open(f'{s3_target}/metadata.json', 'w') as f:
-                json.dump(result, f)
+            with s3.open(f'{s3_target}/metadata.json', 'w') as meta_f:
+                json.dump(result, meta_f)
 
-            for product in result:
-                image_name = f"{product['image_id']}.jpg"
-                s3.upload(os.path.join(DATA_FOLDER, image_name), f'{s3_target}/images/{image_name}')
+            uploader = Uploader(DATA_FOLDER, f'{s3_target}/images')
+            uploader.upload(map(lambda product: f"{product['image_id']}.jpg", result))
 
             if kwargs['apply_augmentation']:
                 logger.info(f'Applying augmentation')
-                transformer = Transformer(CONFIG['albumentation'], DATA_FOLDER)
+                transformer = Transformer(CONFIG['albumentation'], DATA_FOLDER, logger)
 
-                for image_name, image_aug in transformer.apply(result):
-                    with s3.open(f'{s3_target}/augmentation/{image_name}', 'wb') as f:
-                        f.write(image_aug)
+                for image_name, image_aug in transformer.apply(map(lambda row: row['image_id'], result)):
+                    with s3.open(f'{s3_target}/augmentation/{image_name}', 'wb') as aug_f:
+                        aug_f.write(image_aug)
 
         return {
             's3_target': s3_target
@@ -63,3 +63,4 @@ def filter_task(self, **kwargs) -> Dict[str, Any]:
             }
         )
         raise Ignore()
+

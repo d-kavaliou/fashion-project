@@ -3,16 +3,11 @@ import sqlalchemy
 
 from sqlalchemy import create_engine
 from celery.utils.log import get_logger
+from typing import List, Any
 
 logger = get_logger(__name__)
 
-host = os.environ["POSTGRES_HOST"]
-port = os.environ["POSTGRES_PORT"]
-user = os.environ["POSTGRES_USER"]
-password = os.environ["POSTGRES_PASSWORD"]
-db = os.environ["POSTGRES_DB"]
-
-DATABASE_URL = f"postgresql://{user}:{password }@{host}:{port}/{db}"
+DATABASE_URL = os.environ["DATABASE_URL"]
 
 metadata = sqlalchemy.MetaData()
 Products = sqlalchemy.Table(
@@ -32,7 +27,13 @@ Products = sqlalchemy.Table(
 engine = create_engine(DATABASE_URL)
 
 
-def filter_products(data_dict: dict):
+def filter_products(data_dict: dict) -> List[Any]:
+    """
+    A funcotin to make filtering request to the databse and return the response. Utilize sqlalchemy for that
+    :param data_dict:
+        A simple dict that reflects Products table for simplicity.
+    :return:
+    """
     query = Products.select()
 
     # simple filtering logic - just map the request fields to database model structure
