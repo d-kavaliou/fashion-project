@@ -15,3 +15,6 @@ CREATE TABLE products (
 );
 
 COPY products FROM '/tmp/database/data.csv' DELIMITER ',' CSV NULL 'null';
+
+CREATE INDEX category_index ON products (master_category);
+CREATE INDEX sub_category_index ON products (sub_category);
