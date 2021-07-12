@@ -71,6 +71,8 @@ Of course, the appropriate instance type for this task - GPU-enabled environment
 - inference device 
 - batch size
 > It is necessary to add, that this type of task cannot be started without running `imagery` task - that is why the method expects task guid as an input.
+## Client application
+A client application was implemented as Jupyter service - you can find a sample analysis in the `notebooks` volume - [EDA](src/client/notebooks/eda.ipynb)
 # Points to be added
 ## Testing
 I added `test` command to `Makefile` but I haven't added any unit tests to the project - I had a lack of time. 
